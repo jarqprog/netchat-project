@@ -1,4 +1,9 @@
 package com.codecool.networking.modes;
 
-public class Client {
+import java.io.IOException;
+
+public interface Client {
+
+    void start() throws IOException;
+
 }
