@@ -14,6 +14,8 @@ public class Message implements Serializable{
         this.createdAt = LocalDateTime.now();
     }
 
+    public Message() {};
+
     public String getContent() {
         return content;
     }
@@ -37,5 +39,9 @@ public class Message implements Serializable{
                 ", author='" + author + '\'' +
                 ", createdAt=" + createdAt +
                 '}';
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

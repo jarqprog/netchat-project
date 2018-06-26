@@ -21,4 +21,35 @@
     </build>
 
 
+    <!--kryo libs-->
+    <repositories>
+        <repository>
+            <id>clojars</id>
+            <url>http://clojars.org/repo/</url>
+        </repository>
+
+        <repository>
+            <id>sonatype-snapshots</id>
+            <name>sonatype snapshots repo</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>kryonet</groupId>
+            <artifactId>kryonet</artifactId>
+            <version>2.21</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo</artifactId>
+            <version>5.0.0-RC2-SNAPSHOT</version>
+        </dependency>
+
+    </dependencies>
+
 </project>

@@ -1,7 +1,9 @@
 package com.codecool.networking;
 
 import com.codecool.networking.modes.AppMode;
+import com.codecool.networking.modes.client.KryoClient;
 import com.codecool.networking.modes.client.SimpleClient;
+import com.codecool.networking.modes.server.KryoServer;
 import com.codecool.networking.modes.server.SimpleServer;
 
 import java.io.IOException;
@@ -42,12 +44,12 @@ public class NetChat {
 
                     userName = args[USER_NAME_INDEX];
 
-                    new SimpleClient(ipAddress, port, userName).start();
+                    new KryoClient(ipAddress, port, userName).start();
 
                     break;
                 case SERVER:
 
-                    new SimpleServer(port).start();
+                    new KryoServer(port).start();
 
                     break;
 
