@@ -3,7 +3,7 @@ package com.codecool.networking.data;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class Message implements Serializable{
+public class Message implements Serializable {
     private String content;
     private String author;
     private LocalDateTime createdAt;
@@ -13,8 +13,6 @@ public class Message implements Serializable{
         this.author = author;
         this.createdAt = LocalDateTime.now();
     }
-
-    public Message() {};
 
     public String getContent() {
         return content;
@@ -39,9 +37,5 @@ public class Message implements Serializable{
                 ", author='" + author + '\'' +
                 ", createdAt=" + createdAt +
                 '}';
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 }

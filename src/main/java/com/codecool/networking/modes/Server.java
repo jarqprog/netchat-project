@@ -1,9 +1,7 @@
 package com.codecool.networking.modes;
 
-import java.io.IOException;
-
 public interface Server {
 
-    void start() throws IOException, ClassNotFoundException;
+    void start();
 
 }
