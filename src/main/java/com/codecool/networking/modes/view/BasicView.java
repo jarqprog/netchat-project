@@ -4,7 +4,7 @@ import com.codecool.networking.data.Message;
 
 import java.util.Scanner;
 
-public class SimpleView implements NetView {
+public class BasicView implements NetView {
 
 
     @Override
@@ -27,7 +27,7 @@ public class SimpleView implements NetView {
         Scanner scanner = new Scanner(System.in);
         String userInput = "";
 
-        while(userInput.length() > 0) {
+        while(userInput.length() == 0) {
             System.out.println();
             System.out.print("Your message: ");
             userInput = scanner.nextLine();
@@ -42,8 +42,8 @@ public class SimpleView implements NetView {
         System.out.println("**********************************************************");
         System.out.println("Command line arguments: ");
         System.out.println("    - as server: server [port], eg.: server 9999 (will run app as server using port 9999");
-        System.out.println("    - as client: client [ipAddress] [port] [user name]," +
-                "eg.: client 198.168.1.20 9999 John (will run app as client with server's ip 198.168.1.20" +
-                " using port 9999 as John");
+        System.out.println("    - as client: client [port] [ipAddress] [user name]," +
+                "eg.: client 198.168.1.20 9999 John (will run app as client" +
+                " using port 9999 with server's ip 198.168.1.20 as John");
     }
 }

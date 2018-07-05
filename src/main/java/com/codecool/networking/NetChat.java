@@ -3,24 +3,18 @@ package com.codecool.networking;
 import com.codecool.networking.modes.AppMode;
 import com.codecool.networking.modes.Client;
 import com.codecool.networking.modes.Server;
-import com.codecool.networking.modes.client.SimpleClient;
-import com.codecool.networking.modes.listener.Listener;
-import com.codecool.networking.modes.listener.SimpleListener;
-import com.codecool.networking.modes.sender.Sender;
-import com.codecool.networking.modes.sender.SimpleSender;
-import com.codecool.networking.modes.server.SimpleServer;
+import com.codecool.networking.modes.client.BasicClient;
+import com.codecool.networking.modes.server.BasicServer;
 import com.codecool.networking.modes.view.NetView;
-import com.codecool.networking.modes.view.SimpleView;
+import com.codecool.networking.modes.view.BasicView;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
 
 public class NetChat {
 
     public static void main(String[] args) {
 
-        NetView view = new SimpleView();
+        NetView view = new BasicView();
 
         if (args.length < 2) {
             view.displayHelp();
@@ -77,32 +71,22 @@ public class NetChat {
         String ipAddress = args[IP_INDEX];
         String userName = args[USER_NAME_INDEX];
 
-        view.display("Connecting to server...");
-        try (Socket socket = new Socket(ipAddress, port) ) {
-            view.display(String.format("Connection created using: %s [address], %s [port]", ipAddress, port));
-
-            Listener listener = new SimpleListener(socket);
-            Sender sender = new SimpleSender(socket);
-
-            return new SimpleClient(userName, view, listener, sender);
-        }
+        return BasicClient.create(ipAddress, port, userName);
     }
 
     private static Server createServer(NetView view, int port) throws IOException {
 
-        // gather ipAddress
-        InetAddress inetAddress = InetAddress.getLocalHost();
-        String ipAddress = inetAddress.getHostAddress();
-
+        Server server;
         view.display("Creating server...");
-        try (Socket socket = new Socket(ipAddress, port) ) {
-            view.display(String.format("Server created using port %s", port));
 
-            Listener listener = new SimpleListener(socket);
-            Sender sender = new SimpleSender(socket);
-
-            return new SimpleServer(listener, sender);
+        try {
+            server = BasicServer.create(port);
+            view.display("Server has been created successfully!");
+        } catch (IOException e) {
+            view.display("Problem occurred while creating server, exit program");
+            throw new IOException(e);
         }
+        return server;
     }
 
     private static void displayInvalidArgumentInfo(NetView view) {
