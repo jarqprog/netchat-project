@@ -1,10 +1,10 @@
-package com.codecool.networking.modes.view;
+package com.codecool.networking.terminalView;
 
 import com.codecool.networking.data.Message;
 
 import java.util.Scanner;
 
-public class BasicView implements NetView {
+public class BasicView implements TerminalView {
 
 
     @Override

@@ -3,10 +3,10 @@ package com.codecool.networking;
 import com.codecool.networking.modes.AppMode;
 import com.codecool.networking.modes.Client;
 import com.codecool.networking.modes.Server;
-import com.codecool.networking.modes.client.BasicClient;
+import com.codecool.networking.modes.terminalClient.BasicClient;
 import com.codecool.networking.modes.server.BasicServer;
-import com.codecool.networking.modes.view.NetView;
-import com.codecool.networking.modes.view.BasicView;
+import com.codecool.networking.terminalView.BasicView;
+import com.codecool.networking.terminalView.TerminalView;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ public class NetChat {
 
     public static void main(String[] args) {
 
-        NetView view = new BasicView();
+        TerminalView view = new BasicView();
 
         if (args.length < 2) {
             view.displayHelp();
@@ -57,7 +57,7 @@ public class NetChat {
         }
     }
 
-    private static Client createClient(NetView view, String[] args, int port)
+    private static Client createClient(TerminalView view, String[] args, int port)
             throws IndexOutOfBoundsException, IOException {
 
         if (args.length != 4) {
@@ -71,7 +71,7 @@ public class NetChat {
         String ipAddress = args[IP_INDEX];
         String userName = args[USER_NAME_INDEX];
 
-        return BasicClient.create(ipAddress, port, userName);
+        return BasicClient.create(ipAddress, port, userName, view);
     }
 
     private static Server createServer(NetView view, int port) throws IOException {

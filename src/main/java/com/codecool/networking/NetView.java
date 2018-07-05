@@ -1,4 +1,4 @@
-package com.codecool.networking.modes.view;
+package com.codecool.networking;
 
 import com.codecool.networking.data.Message;
 

@@ -9,53 +9,54 @@ import java.net.Socket;
 
 public class BasicServer implements Server {
 
-    private final ServerSocket serverSocket;
+    private final int port;
 
     public static Server create(int port) throws IOException {
         return new BasicServer(port);
     }
 
     private BasicServer(int port) throws IOException {
-        this.serverSocket = new ServerSocket(port);
+        this.port = port;
     }
 
     @Override
     public void start() {
 
-        Message message;
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("Server is active, waiting for clients...");
 
-        System.out.println("Waiting for clients");
-        try (Socket socket = serverSocket.accept()) {
+            try (Socket socket = serverSocket.accept()) {
+                System.out.println("Client connected!");
 
-            System.out.println("Server - client connected");
+                try (
+                        ObjectInputStream inputStream = new ObjectInputStream(new DataInputStream(socket.getInputStream()));
+                        ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream()) ) {
 
-            try (
-                    ObjectOutputStream outputStream = new ObjectOutputStream(new DataOutputStream(socket.getOutputStream()));
-                    ObjectInputStream inputStream = new ObjectInputStream(new DataInputStream(socket.getInputStream())) ) {
+                    while (true) {
 
-                while ( (message = (Message) inputStream.readObject() ) != null) {
+                        Message message = (Message) inputStream.readObject();
+                        System.out.println("Message received: " + message);
 
-
-                    System.out.println("Server, message: " + message);
-
-                    outputStream.writeObject(message);
-                    outputStream.flush();
-
-                    if (message.getContent().equals(".END")) {
-                        System.out.println("server, exiting");
-                        break;
+                        if (message != null) {
+                            outputStream.writeObject(message);
+                            outputStream.flush();
+                            if (message.getContent().equals(".END")) {
+                                break;
+                            }
+                        }
                     }
 
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (EOFException notUsed) {
+                    System.out.println("Client disconnected");
                 }
-
-                System.out.println("Exiting server");
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+
 
     }
 }
