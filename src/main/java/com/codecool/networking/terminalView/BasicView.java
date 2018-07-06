@@ -9,16 +9,19 @@ public class BasicView implements TerminalView {
 
     @Override
     public void display(String text) {
-        System.out.println();
         System.out.println(text);
-        System.out.println();
     }
 
     @Override
     public void display(Message message) {
-        System.out.println();
         System.out.println(message);
+    }
+
+    @Override
+    public String getInput(String message) {
         System.out.println();
+        System.out.print(message);
+        return getInput();
     }
 
     @Override
@@ -28,8 +31,6 @@ public class BasicView implements TerminalView {
         String userInput = "";
 
         while(userInput.length() == 0) {
-            System.out.println();
-            System.out.print("Your message: ");
             userInput = scanner.nextLine();
         }
         return userInput;

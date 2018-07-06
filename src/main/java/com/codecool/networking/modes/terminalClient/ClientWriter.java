@@ -1,10 +1,10 @@
 package com.codecool.networking.modes.terminalClient;
 
 import com.codecool.networking.data.Message;
+import com.codecool.networking.modes.MagicWords;
 import com.codecool.networking.terminalView.TerminalView;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
@@ -13,50 +13,80 @@ import java.net.Socket;
  */
 class ClientWriter implements Runnable {
 
-    private final TerminalClient client;
     private final Socket socket;
     private final TerminalView view;
     private final String userName;
+    private final String quitChatWord;
+    private boolean shouldExit;
 
-    ClientWriter(TerminalClient client, Socket socket, TerminalView view, String userName) {
-        this.client = client;
+    ClientWriter(Socket socket, TerminalView view, String userName, MagicWords quitChatWord) {
         this.socket = socket;
         this.view = view;
         this.userName = userName;
+        this.quitChatWord = quitChatWord.getWord();
     }
 
     @Override
-    public void run() {
-
-        String QUIT_CHAT_WORD = ".END";
-        String info = String.format("Type Your message (or %s to exit chat): ", QUIT_CHAT_WORD);
-
+    public synchronized void run() {
         try ( ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream()) ) {
 
-            String typedMessage = "";
+            tryToRegister(outputStream);
+            String info = String.format("Type Your message (or '%s' to exit chat): ", quitChatWord);
+            view.display(info);
 
-            while (! typedMessage.equals(QUIT_CHAT_WORD) ) {
+            while (! shouldExit) {
 
-                view.display(info);
-                typedMessage = view.getInput();
-
+                String typedMessage = view.getInput();
                 Message newMessage = new Message(typedMessage, userName);
-                if (! socket.isClosed() ) {
-                    outputStream.writeObject(newMessage);
-                    outputStream.flush();
-                }
+                outputStream.writeObject(newMessage);
+                outputStream.flush();
 
-                if (typedMessage.equals(QUIT_CHAT_WORD)) {
-                    break;
-                }
+                shouldExit = checkIfShouldQuit(typedMessage);
             }
 
         } catch (IOException e) {
-            view.display("[Connection problem occurred]:");
-            e.printStackTrace();
-
+            if (! shouldExit) {
+                view.display("[Connection problem occurred]:");
+                e.printStackTrace();
+            }
+        } finally {
+            closeSocket();
         }
+    }
 
-        client.shutDown();
+    private void tryToRegister(ObjectOutputStream outputStream) throws IOException {
+        if (sendRegistrationMessageToServer(outputStream)) {
+            String connectionInfo = String.format("Connected to server: [%s]. Registration succeed.", socket.getInetAddress());
+            view.display(connectionInfo);
+        } else {
+            view.display("Registration failed, shutting down the app...");
+            throw new IOException();
+        }
+    }
+
+    private boolean sendRegistrationMessageToServer(ObjectOutputStream outputStream) {
+        Message registrationMessage = new Message(userName+ " has joined the chat", userName);
+        try {
+            outputStream.writeObject(registrationMessage);
+            outputStream.flush();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private boolean checkIfShouldQuit(String messageContent) {
+        return messageContent.equals(quitChatWord);
+    }
+
+    private void closeSocket() {
+        if (socket != null && ! socket.isClosed()) {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

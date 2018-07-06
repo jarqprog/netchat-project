@@ -74,19 +74,9 @@ public class NetChat {
         return BasicClient.create(ipAddress, port, userName, view);
     }
 
-    private static Server createServer(NetView view, int port) throws IOException {
-
-        Server server;
+    private static Server createServer(NetView view, int port) {
         view.display("Creating server...");
-
-        try {
-            server = BasicServer.create(port);
-            view.display("Server has been created successfully!");
-        } catch (IOException e) {
-            view.display("Problem occurred while creating server, exit program");
-            throw new IOException(e);
-        }
-        return server;
+        return BasicServer.createMultiUserServer(port);
     }
 
     private static void displayInvalidArgumentInfo(NetView view) {

@@ -4,7 +4,4 @@ import com.codecool.networking.modes.Client;
 
 public interface TerminalClient extends Client {
 
-    boolean isAlive();
-    void shutDown();
-
 }

@@ -1,11 +1,14 @@
 package com.codecool.networking.modes.terminalClient;
 
 import com.codecool.networking.data.Message;
+import com.codecool.networking.modes.MagicWords;
 import com.codecool.networking.terminalView.TerminalView;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
+import java.net.SocketException;
 
 
 /**
@@ -13,34 +16,44 @@ import java.net.Socket;
  */
 class ClientReader implements Runnable {
 
-    private final TerminalClient client;
     private Socket socket;
     private final TerminalView view;
+    private boolean shouldExit;
+    private final String quitChatWord;
 
-    ClientReader(TerminalClient client, Socket socket, TerminalView view) throws IOException {
-        this.client = client;
+    ClientReader(Socket socket, TerminalView view, MagicWords quitChatWord) {
         this.socket = socket;
         this.view = view;
+        this.quitChatWord = quitChatWord.getWord();
     }
 
     @Override
     public void run() {
+        String connectionProblemInfo = "[Connection problem occurred]";
 
         try ( ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream()) ) {
-
-            while (client.isAlive()) {
-
-                Message message = (Message) inputStream.readObject();
-                if (message != null) {
-                    view.display(message);
+            while (! shouldExit) {
+                try {
+                    Message message = (Message) inputStream.readObject();
+                    shouldExit = checkIfShouldQuit(message);
+                    if (! shouldExit) {
+                        view.display(message);
+                    }
+                } catch (SocketException | EOFException notUsed) {
+                    view.display(connectionProblemInfo);
+                    shouldExit = true;
                 }
             }
-        } catch (IOException e) {
-            view.display("[Connection problem occurred]:");
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            view.display("[Problem occurred with retrieving the message]:");
+        } catch (IOException | ClassNotFoundException e) {
+            view.display(connectionProblemInfo);
             e.printStackTrace();
         }
+    }
+
+    private boolean checkIfShouldQuit(Message message) {
+        if (message != null) {
+            return message.getContent().equals(quitChatWord);
+        }
+        return true;
     }
 }
