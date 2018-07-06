@@ -2,6 +2,7 @@ package com.codecool.networking.data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Message implements Serializable {
     private String content;
@@ -18,24 +19,14 @@ public class Message implements Serializable {
         return content;
     }
 
-    public void setContent(String content) {
-        this.content = content;
-    }
-
     public String getAuthor() {
         return author;
     }
 
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
     @Override
     public String toString() {
-        return "Message{" +
-                "content='" + content + '\'' +
-                ", author='" + author + '\'' +
-                ", createdAt=" + createdAt +
-                '}';
+        String dateTimePattern = "YYYY-MM-dd HH:mm:ss";
+        return String.format(" ### %s [%s]: %s", author,
+                createdAt.format(DateTimeFormatter.ofPattern(dateTimePattern)), content);
     }
 }
