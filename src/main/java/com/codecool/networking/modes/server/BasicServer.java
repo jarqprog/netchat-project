@@ -12,7 +12,7 @@ import java.util.Set;
 public class BasicServer implements MultiUserServer {
 
     private final int port;
-    private volatile Set<UserSocket> users;
+    private volatile Set<UserServer> users;
 
     public static MultiUserServer createMultiUserServer(int port) {
         return new BasicServer(port);
@@ -36,7 +36,7 @@ public class BasicServer implements MultiUserServer {
                 Socket socket = serverSocket.accept();
                 System.out.println("SERVER: Client connected!");
                 MagicWords spellToExitChat = MagicWords.QUIT_CHAT_WORD;
-                new Thread(new UserSocket(socket, this, spellToExitChat)).start();
+                new Thread(new UserServer(socket, this, spellToExitChat)).start();
                 System.out.println(users);
             }
         } catch (IOException e) {
@@ -46,12 +46,12 @@ public class BasicServer implements MultiUserServer {
     }
 
     @Override
-    public synchronized Set<UserSocket> getUsers() {
+    public synchronized Set<UserServer> getUsers() {
         return users;
     }
 
     @Override
-    public boolean registerUser(UserSocket userSocket) {
+    public boolean registerUser(UserServer userSocket) {
         if (userSocket.getUserName().length() == 0 || this.users.contains(userSocket)) {
             return false;
         }

@@ -6,6 +6,6 @@ import java.util.Set;
 
 interface MultiUserServer extends Server {
 
-    Set<UserSocket> getUsers();
-    boolean registerUser(UserSocket userSocket);
+    Set<UserServer> getUsers();
+    boolean registerUser(UserServer userSocket);
 }

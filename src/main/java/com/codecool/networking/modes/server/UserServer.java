@@ -5,18 +5,19 @@ import com.codecool.networking.modes.MagicWords;
 
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.Objects;
 
-class UserSocket implements Runnable {
+class UserServer implements Runnable {
 
     private final Socket userSocket;
     private final MultiUserServer server;
     private String userName;
     private boolean shouldQuit;
     private final String quitChatWord;
+    private ObjectOutputStream outputStream;
+    private ObjectInputStream inputStream;
 
-    UserSocket(Socket userSocket, MultiUserServer server, MagicWords quitChatWord) {
+    UserServer(Socket userSocket, MultiUserServer server, MagicWords quitChatWord) {
         this.userSocket = userSocket;
         this.server = server;
         this.quitChatWord = quitChatWord.getWord();
@@ -26,19 +27,18 @@ class UserSocket implements Runnable {
     @Override
     public void run() {
         try (
-                ObjectOutputStream outputStream = new ObjectOutputStream(new DataOutputStream(userSocket
+                ObjectOutputStream objectOutputStream = new ObjectOutputStream(new DataOutputStream(userSocket
                         .getOutputStream()));
-                ObjectInputStream inputStream = new ObjectInputStream(new DataInputStream(userSocket
+                ObjectInputStream objectInputStream = new ObjectInputStream(new DataInputStream(userSocket
                         .getInputStream()))) {
 
-            tryToRegister(inputStream, outputStream);
-
+            setStreams(objectInputStream, objectOutputStream);
+            tryToRegister();
             while (! shouldQuit) {
                 Message message = (Message) inputStream.readObject();
-                if (! broadcastMessage(message, outputStream)) {
+                if (! broadcastMessage(message)) {
                     System.out.println("Message: " + message + " wasn't sent");
                 }
-
                 shouldQuit = checkIfShouldQuit(message);
             }
         } catch (IOException | ClassNotFoundException notUsed) {
@@ -54,26 +54,44 @@ class UserSocket implements Runnable {
         return userName;
     }
 
-    private void unregisterFromServer() {
-        server.getUsers().remove(this);
-    }
-
-    private boolean broadcastMessage(Message message, ObjectOutputStream outputStream) throws IOException {
-        if (message == null || userSocket.isClosed()) {
+    boolean sendMessage(Message message) {
+        if (message == null) {
             return false;
         }
         try {
             outputStream.writeObject(message);
             outputStream.flush();
-        } catch (SocketException notUsed) {
+        } catch (IOException notUsed) {
             return false;
         }
         return true;
     }
 
-    private void tryToRegister(ObjectInputStream inputStream, ObjectOutputStream outputStream) throws IOException {
+    private void setStreams(ObjectInputStream objectInputStream, ObjectOutputStream objectOutputStream) {
+        this.inputStream = objectInputStream;
+        this.outputStream = objectOutputStream;
+    }
 
-        if (registerOnServerAndSayHello(inputStream, outputStream)) {
+    private boolean broadcastMessage(Message message) {
+        if (message == null) {
+            return false;
+        }
+        String content = message.getContent();
+        if (! content.equals(quitChatWord)) {
+            for (UserServer userServer : server.getUsers()) {
+                userServer.sendMessage(message);
+            }
+        }
+        return true;
+    }
+
+    private void unregisterFromServer() {
+        server.getUsers().remove(this);
+    }
+
+    private void tryToRegister() throws IOException {
+
+        if (registerOnServerAndSayHello()) {
             System.out.println("User registered on server");
         } else {
             System.out.println("Registration failed");
@@ -83,14 +101,13 @@ class UserSocket implements Runnable {
 
     }
 
-    private boolean registerOnServerAndSayHello(ObjectInputStream inputStream, ObjectOutputStream outputStream) {
-
+    private boolean registerOnServerAndSayHello() {
         try {
             Message message = (Message) inputStream.readObject();
             if (message != null) {
                 this.userName = message.getAuthor();
                 this.server.registerUser(this);
-                broadcastMessage(message, outputStream);
+                broadcastMessage(message);
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -100,7 +117,6 @@ class UserSocket implements Runnable {
     }
 
     private void closeSocket() {
-
         try {
             if (userSocket != null && ! userSocket.isClosed()) {
                 userSocket.close();
@@ -133,7 +149,7 @@ class UserSocket implements Runnable {
         if (getClass() != o.getClass()) {
             return false;
         }
-        UserSocket userSocket = (UserSocket) o;
+        UserServer userSocket = (UserServer) o;
         return Objects.equals(userName, userSocket.getUserName());
     }
 }
