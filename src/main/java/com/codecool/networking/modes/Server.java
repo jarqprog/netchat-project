@@ -1,4 +1,7 @@
 package com.codecool.networking.modes;
 
-public class Server {
+public interface Server {
+
+    void start();
+
 }
