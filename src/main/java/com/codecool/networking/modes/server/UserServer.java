@@ -105,15 +105,37 @@ class UserServer implements Runnable {
         try {
             Message message = (Message) inputStream.readObject();
             if (message != null) {
-                this.userName = message.getAuthor();
-                this.server.registerUser(this);
+                userName = message.getAuthor();
+                server.registerUser(this);
+                showLoggedUsersSet();
                 broadcastMessage(message);
+                sendInfoAboutLoggedUsers();
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             return false;
         }
         return true;
+    }
+
+    private void showLoggedUsersSet() {
+        System.out.println(server.getUsers());
+    }
+
+    private void sendInfoAboutLoggedUsers() {
+        String loggedUsers = buildInfoAboutLoggedUsers();
+        Message chatUsersInfo = new Message(loggedUsers, "[server]");
+        sendMessage(chatUsersInfo);
+    }
+
+    private String buildInfoAboutLoggedUsers() {
+        StringBuilder loggedUsers = new StringBuilder("Chat Users : ");
+        for (UserServer user : server.getUsers()) {
+            loggedUsers.append(user.getUserName());
+            loggedUsers.append(", ");
+        }
+        int lastCommaIndex = loggedUsers.length()-2;
+        return loggedUsers.substring(0, lastCommaIndex);
     }
 
     private void closeSocket() {
@@ -151,5 +173,10 @@ class UserServer implements Runnable {
         }
         UserServer userSocket = (UserServer) o;
         return Objects.equals(userName, userSocket.getUserName());
+    }
+
+    @Override
+    public String toString() {
+        return "ServerSocket for Client: " + userName;
     }
 }
