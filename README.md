@@ -1,4 +1,4 @@
-Simple ChatRoom
+ChatRoom (terminal version)
 ------
 java network, threads
 
