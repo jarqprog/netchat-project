@@ -43,7 +43,7 @@ class ClientWriter implements Runnable {
                 shouldExit = checkIfShouldQuit(typedMessage);
             }
 
-        } catch (IOException notUsed) {
+        } catch (IOException  notUsed) {
             shouldExit = true;
         } finally {
             closeSocket();

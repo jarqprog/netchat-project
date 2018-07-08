@@ -37,7 +37,7 @@ class UserServer implements Runnable {
             while (! shouldQuit) {
                 Message message = (Message) inputStream.readObject();
                 if (! broadcastMessage(message)) {
-                    System.out.println("Message: " + message + " wasn't sent");
+                    System.out.println("The message: " + message + " may not has been sent to everyone");
                 }
                 shouldQuit = checkIfShouldQuit(message);
             }
@@ -54,7 +54,7 @@ class UserServer implements Runnable {
         return userName;
     }
 
-    boolean sendMessage(Message message) {
+    private boolean sendMessage(Message message) {
         if (message == null) {
             return false;
         }
@@ -78,11 +78,31 @@ class UserServer implements Runnable {
         }
         String content = message.getContent();
         if (! content.equals(quitChatWord)) {
-            for (UserServer userServer : server.getUsers()) {
-                userServer.sendMessage(message);
+            return sendMessageToAll(message);
+        } else {
+            return sayThatUserHasLeft();
+        }
+    }
+
+    private boolean sendMessageToAll(Message message) {
+        boolean succeed = true;
+        for (UserServer userServer : server.getUsers()) {
+            if (! userServer.sendMessage(message) ) {
+                succeed = false;
             }
         }
-        return true;
+        return succeed;
+    }
+
+    private boolean sayThatUserHasLeft() {
+        boolean succeed = true;
+        Message exitChatMessage = new Message(userName + " has left the chat..", userName);
+        for (UserServer userServer : server.getUsers()) {
+            if (! userServer.sendMessage(exitChatMessage) ) {
+                succeed = userServer == this;  // user socket is closed at this time
+            }
+        }
+        return succeed;
     }
 
     private void unregisterFromServer() {
