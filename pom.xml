@@ -39,18 +39,4 @@
         </plugins>
     </build>
 
-    <repositories>
-        <repository>
-            <id>clojars</id>
-            <url>http://clojars.org/repo/</url>
-        </repository>
-
-        <repository>
-            <id>sonatype-snapshots</id>
-            <name>sonatype snapshots repo</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>
-
-    </repositories>
-
 </project>
