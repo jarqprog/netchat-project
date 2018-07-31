@@ -37,7 +37,7 @@ class UserServer implements Runnable {
             while (! shouldQuit) {
                 Message message = (Message) inputStream.readObject();
                 if (! broadcastMessage(message)) {
-                    System.out.println("Message: " + message + " wasn't sent");
+                    System.out.println("The message: " + message + " may not has been sent to everyone");
                 }
                 shouldQuit = checkIfShouldQuit(message);
             }
@@ -54,7 +54,7 @@ class UserServer implements Runnable {
         return userName;
     }
 
-    boolean sendMessage(Message message) {
+    private boolean sendMessage(Message message) {
         if (message == null) {
             return false;
         }
@@ -78,11 +78,31 @@ class UserServer implements Runnable {
         }
         String content = message.getContent();
         if (! content.equals(quitChatWord)) {
-            for (UserServer userServer : server.getUsers()) {
-                userServer.sendMessage(message);
+            return sendMessageToAll(message);
+        } else {
+            return sayThatUserHasLeft();
+        }
+    }
+
+    private boolean sendMessageToAll(Message message) {
+        boolean succeed = true;
+        for (UserServer userServer : server.getUsers()) {
+            if (! userServer.sendMessage(message) ) {
+                succeed = false;
             }
         }
-        return true;
+        return succeed;
+    }
+
+    private boolean sayThatUserHasLeft() {
+        boolean succeed = true;
+        Message exitChatMessage = new Message(userName + " has left the chat..", userName);
+        for (UserServer userServer : server.getUsers()) {
+            if (! userServer.sendMessage(exitChatMessage) ) {
+                succeed = userServer == this;  // user socket is closed at this time
+            }
+        }
+        return succeed;
     }
 
     private void unregisterFromServer() {
@@ -105,15 +125,37 @@ class UserServer implements Runnable {
         try {
             Message message = (Message) inputStream.readObject();
             if (message != null) {
-                this.userName = message.getAuthor();
-                this.server.registerUser(this);
+                userName = message.getAuthor();
+                server.registerUser(this);
+                showLoggedUsersSet();
                 broadcastMessage(message);
+                sendInfoAboutLoggedUsers();
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             return false;
         }
         return true;
+    }
+
+    private void showLoggedUsersSet() {
+        System.out.println(server.getUsers());
+    }
+
+    private void sendInfoAboutLoggedUsers() {
+        String loggedUsers = buildInfoAboutLoggedUsers();
+        Message chatUsersInfo = new Message(loggedUsers, "[server]");
+        sendMessage(chatUsersInfo);
+    }
+
+    private String buildInfoAboutLoggedUsers() {
+        StringBuilder loggedUsers = new StringBuilder("Chat Users : ");
+        for (UserServer user : server.getUsers()) {
+            loggedUsers.append(user.getUserName());
+            loggedUsers.append(", ");
+        }
+        int lastCommaIndex = loggedUsers.length()-2;
+        return loggedUsers.substring(0, lastCommaIndex);
     }
 
     private void closeSocket() {
@@ -151,5 +193,10 @@ class UserServer implements Runnable {
         }
         UserServer userSocket = (UserServer) o;
         return Objects.equals(userName, userSocket.getUserName());
+    }
+
+    @Override
+    public String toString() {
+        return "ServerSocket for Client: " + userName;
     }
 }

@@ -29,24 +29,22 @@ class ClientReader implements Runnable {
 
     @Override
     public void run() {
-        String connectionProblemInfo = "[Connection problem occurred]";
 
         try ( ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream()) ) {
             while (! shouldExit) {
                 try {
+
                     Message message = (Message) inputStream.readObject();
                     shouldExit = checkIfShouldQuit(message);
-                    if (! shouldExit) {
-                        view.display(message);
-                    }
+                    view.display(message);
+
                 } catch (SocketException | EOFException notUsed) {
-                    view.display(connectionProblemInfo);
                     shouldExit = true;
+                    view.display("Exiting chat...");
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
-            view.display(connectionProblemInfo);
-            e.printStackTrace();
+            view.display("[Connection problem occurred]");
         }
     }
 

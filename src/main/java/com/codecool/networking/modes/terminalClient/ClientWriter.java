@@ -40,15 +40,11 @@ class ClientWriter implements Runnable {
                 Message newMessage = new Message(typedMessage, userName);
                 outputStream.writeObject(newMessage);
                 outputStream.flush();
-
                 shouldExit = checkIfShouldQuit(typedMessage);
             }
 
-        } catch (IOException e) {
-            if (! shouldExit) {
-                view.display("[Connection problem occurred]:");
-                e.printStackTrace();
-            }
+        } catch (IOException  notUsed) {
+            shouldExit = true;
         } finally {
             closeSocket();
         }

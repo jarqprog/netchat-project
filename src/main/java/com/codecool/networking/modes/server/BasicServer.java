@@ -37,7 +37,6 @@ public class BasicServer implements MultiUserServer {
                 System.out.println("SERVER: Client connected!");
                 MagicWords spellToExitChat = MagicWords.QUIT_CHAT_WORD;
                 new Thread(new UserServer(socket, this, spellToExitChat)).start();
-                System.out.println(users);
             }
         } catch (IOException e) {
             System.out.println("Couldn't run server!");
